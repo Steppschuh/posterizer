@@ -1,5 +1,4 @@
 
-
 var rasterbation = {
 	horizontalTilesCount: null,
 	verticalTilesCount: null,
@@ -96,15 +95,28 @@ var rasterbation = {
 	},
 
 	scaleTile: function(tile, scaleFactor) {
-		tile.x = scaleFactor * tile.x;
-		tile.y = scaleFactor * tile.y;
-		tile.width = scaleFactor * this.targetTileWidthPX;
-		tile.height = scaleFactor * this.targetTileHeightPX;
-		return tile;
+		scaledTile = Object.create(tile);
+		scaledTile.x = scaleFactor * scaledTile.x;
+		scaledTile.y = scaleFactor * scaledTile.y;
+		scaledTile.width = scaleFactor * this.targetTileWidthPX;
+		scaledTile.height = scaleFactor * this.targetTileHeightPX;
+		return scaledTile;
+	},
+
+	refreshRenderings: function(rasterize) {
+		if (rasterize) {
+			this.rasterizeImage();
+		}
+		this.renderSetupCanvas();
 	},
 
 	rasterizeImage: function() {
 		console.log("Rasterizing image");
+
+		if (this.sourceImage == null) {
+			console.log("No sourceimage defined");
+			return;
+		}
 
 		// reset existing raster
 		this.sourceImageRaster = [];
@@ -181,17 +193,19 @@ var rasterbation = {
 		}
 
 		if (this.sourceImageRaster == null) {
+			console.log("Image not yet rasterized");
 			this.rasterizeImage();
 		}
 
 		console.log("Rendering image to canvas");
 
+		var previewCanvasWrapper = document.getElementById('setupCanvasWrapper');
 		var previewCanvas = document.getElementById('setupCanvas');
 		var previewCanvasContext = previewCanvas.getContext('2d');
 
 		// resize canvas
-		previewCanvas.width = 300;
-		previewCanvas.height = 300;
+		previewCanvas.width = previewCanvasWrapper.offsetWidth;
+		previewCanvas.height = previewCanvasWrapper.offsetHeight;
 		
 		var previewScaleFactor;
 		var imageRatio = this.sourceImage.width / this.sourceImage.height;
@@ -225,13 +239,95 @@ var rasterbation = {
 	},
 };
 
+window.addEventListener('resize', function(event){
+  rasterbation.refreshRenderings(false);
+});
+
 function initRasterbation() {
-	rasterbation.horizontalTilesCount = 5;
-	rasterbation.verticalTilesCount = 3;
+
+	var tilePresetSelector = document.getElementById("tilePresetSelector");
+	tilePresetSelector.onchange = function() {
+		var tileOrientationSelector = document.getElementById("tileOrientationSelector");
+		var orientation = tileOrientationSelector.value;
+		var portrait = orientation == "portrait";
+
+		var tileSizePresetContainer = document.getElementById("tileSizePresetContainer");
+		var tileSizeCustomContainer = document.getElementById("tileSizeCustomContainer");
+
+		var value = tilePresetSelector.value;
+
+		if (value == "custom") {
+			tileSizePresetContainer.style.display = "none";
+			tileSizeCustomContainer.style.display = "block";
+			
+			rasterbation.targetTileWidth = 5;
+			rasterbation.targetTileHeight = 5;
+		} else {
+			tileSizePresetContainer.style.display = "block";
+			tileSizeCustomContainer.style.display = "none";
+
+			if (value == "a4") {
+				if (portrait) {
+					rasterbation.targetTileWidth = 8.27;
+					rasterbation.targetTileHeight = 11.69;
+				} else {
+					rasterbation.targetTileWidth = 11.69;
+					rasterbation.targetTileHeight = 8.27;
+				}
+			} else if (value == "a3") {
+				if (portrait) {
+					rasterbation.targetTileWidth = 11.69;
+					rasterbation.targetTileHeight = 16.53;
+				} else {
+					rasterbation.targetTileWidth = 16.53;
+					rasterbation.targetTileHeight = 11.69;
+				}
+			} else if (value == "usletter") {
+				if (portrait) {
+					rasterbation.targetTileWidth = 8.5;
+					rasterbation.targetTileHeight = 11;
+				} else {
+					rasterbation.targetTileWidth = 11;
+					rasterbation.targetTileHeight = 8.5;
+				}
+			} else if (value == "uslegal") {
+				if (portrait) {
+					rasterbation.targetTileWidth = 8.5;
+					rasterbation.targetTileHeight = 14;
+				} else {
+					rasterbation.targetTileWidth = 14;
+					rasterbation.targetTileHeight = 8.5;
+				}
+			}
+		}
+
+		rasterbation.refreshRenderings(true);
+	};
+	tilePresetSelector.onchange();
+
+	var tileOrientationSelector = document.getElementById("tileOrientationSelector");
+	tileOrientationSelector.onchange = function() {
+		document.getElementById("tilePresetSelector").onchange();
+	}
+
+	var horizontalTilesCount = document.getElementById("horizontalTilesCount");
+	horizontalTilesCount.onchange = function() {
+		rasterbation.horizontalTilesCount = parseInt(horizontalTilesCount.value);
+		rasterbation.refreshRenderings(true);
+	};
+	rasterbation.horizontalTilesCount = parseInt(horizontalTilesCount.value);
+
+	var verticalTilesCount = document.getElementById("verticalTilesCount");
+	verticalTilesCount.onchange = function() {
+		rasterbation.verticalTilesCount = parseInt(verticalTilesCount.value);
+		rasterbation.refreshRenderings(true);
+	};
+	rasterbation.verticalTilesCount = parseInt(verticalTilesCount.value);
+	
+
+
 	rasterbation.targetTileWidthPX = null;
 	rasterbation.targetTileHeightPX = null;
-	rasterbation.targetTileWidth = 5;
-	rasterbation.targetTileHeight = 5;
 	rasterbation.targetTileDPI = 300;
 
 	rasterbation.sourceImage = null;
@@ -240,52 +336,17 @@ function initRasterbation() {
 	rasterbation.sourceImageSwatches = null;
 }
 
-function createImagePreviewOnCanvas(image, canvas) {
-	console.log("Rendering image to canvas");
-
-	console.log("Image size: " + image.width + " x " + image.height);
-	var r = gcd (image.width, image.height);
-	console.log("Image aspect ratio: " + image.width/r + ":" + image.height/r);
-
-	var context = canvas.getContext('2d');
-	//draw background image
-    context.drawImage(image, 0, 0);
-    //draw a box over the top
-    context.fillStyle = "rgba(200, 0, 0, 0.5)";
-    context.fillRect(0, 0, 50, 50);
-}
-
-function getVibrantColor() {
-	var vibrant = new Vibrant(cardImage);
-	var swatches = vibrant.swatches()
-
-	var tagsDiv = cardImage.parentNode.parentNode
-			.getElementsByClassName("card-tags")[0];
-	tagsDiv.style.opacity = 0.9;
-	var tags = tagsDiv.getElementsByTagName("li");
-
-	for (swatch in swatches) {
-		if (swatches.hasOwnProperty(swatch) && swatches[swatch]) {
-			if (swatch === "DarkMuted") {
-				for (var j = 0; j < tags.length; j++) {
-					tags[j].style.backgroundColor = swatches[swatch]
-							.getHex();
-					tags[j].getElementsByTagName("a")[0].style.color = swatches[swatch]
-							.getTitleTextColor();
-				}
-			}
-			/*
-			 * Vibrant #7a4426 Muted #7b9eae DarkVibrant
-			 * #348945 DarkMuted #141414 LightVibrant
-			 * #f3ccb4
-			 */
-		}
-	}
-}
-
 /*
 	Helper functions
 */
 function gcd (a, b) {
     return (b == 0) ? a : gcd (b, a%b);
+}
+
+function mmToInches(mm) {
+	return mm * 0.039;
+}
+
+function inchesToMm(inches) {
+	return inches * 25.4;
 }

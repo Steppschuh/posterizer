@@ -70,23 +70,69 @@
 
           <div class="row">
 
-            <div class="col s12 m6">
+            <div class="col s12 m8 l6">
               
-              <div class="input-field col s6">
-                <input value="5" id="horizontalTilesCount" type="number" min="1" max="100">
-                <label class="active" for="horizontalTilesCount">Collumns</label>
+              <div class="row">
+                <p>Tile dimensions</p>
+                <div class="input-field col s3">
+                  <select id="tilePresetSelector">
+                    <option value="a4" selected>A4</option>
+                    <option value="a3">A3</option>
+                    <option value="usletter">US letter</option>
+                    <option value="uslegal">US legal</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                  <label>Size</label>
+                </div>
+
+                <div id="tileSizePresetContainer">
+                  <div class="input-field col s3">
+                    <select id="tileOrientationSelector">
+                      <option value="portrait" selected>Portrait</option>
+                      <option value="landscape">Landscape</option>
+                    </select>
+                    <label>Orientation</label>
+                  </div>
+                </div>
+
+                <div id="tileSizeCustomContainer">
+                  <div class="input-field col s3">
+                    <input value="5" id="tileWidth" type="number" min="1" max="10000">
+                    <label class="active" for="tileWidth">Width</label>
+                  </div>
+                  <div class="input-field col s3">
+                    <input value="5" id="tileHeight" type="number" min="1" max="10000">
+                    <label class="active" for="tileHeight">Height</label>
+                  </div>
+                  <div class="input-field col s3">
+                    <select id="tileUnitSelector">
+                      <option value="in" selected>Inches</option>
+                      <option value="mm">Millimeter</option>
+                    </select>
+                    <label>Unit</label>
+                  </div>
+                </div>
+
               </div>
 
-              <div class="input-field col s6">
-                <input value="2" id="verticalTilesCount" type="number" min="1" max="100">
-                <label class="active" for="verticalTilesCount">Rows</label>
+              <div class="row">
+                <p>Tile count</p>
+                <div class="input-field col s3">
+                  <input value="5" id="horizontalTilesCount" type="number" min="1" max="100">
+                  <label class="active" for="horizontalTilesCount">Collumns</label>
+                </div>
+                <div class="input-field col s3">
+                  <input value="2" id="verticalTilesCount" type="number" min="1" max="100">
+                  <label class="active" for="verticalTilesCount">Rows</label>
+                </div>
               </div>
+
 
             </div>
 
-            <div class="col s12 m6">
-            <div id="setupCanvasWrapper">
-                <canvas id="setupCanvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+            <div class="col s12 m4 l6">
+              <div id="setupCanvasWrapper">
+                <canvas id="setupCanvas" width="300" height="300"></canvas>
               </div>
             </div>
 
