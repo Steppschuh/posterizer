@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en">
+<head>
+  <title>IntelliQ.me - Smarter Waiting</title>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="../static/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection" />
+  <link href="../static/css/style.css" type="text/css" rel="stylesheet" media="screen,projection" />
+  
+  <script type="text/javascript">
+    function init() {
+      initRasterbation();
+      var imageLoadedCallback = function() {
+        rasterbation.renderSetupCanvas();
+      }
+
+      // small image:  https://farm8.staticflickr.com/7650/16853455205_96ca2b6c69_b.jpg
+      // huge image: https://farm8.staticflickr.com/7650/16853455205_9c0ac08245_o.jpg
+
+      // small panorama image:  https://farm8.staticflickr.com/7766/17893366569_f45d89c581_b.jpg
+      // huge panorama image: https://farm8.staticflickr.com/7766/17893366569_6da705c7a3_o.jpg
+      
+      // random image: http://lorempixel.com/1920/1080/nature/
+
+      rasterbation.setImage("http://lorempixel.com/1920/1080/nature/", imageLoadedCallback);
+    }
+  </script>
+
+</head>
+
+<body onload="init();">
+
+  <header>
+    <nav class="primary-color" role="navigation">
+      <div class="nav-wrapper container">
+        <a id="logo-container" href="${rootUrl}" class="brand-logo">IntelliQ.me</a>
+        <ul class="right hide-on-med-and-down">
+
+        </ul>
+
+        <ul id="nav-mobile" class="side-nav">
+          <li><a href="${rootUrl}/apps/">Get the app<a></li>
+          <li><a href="${rootUrl}/business/">For business</a></li>
+        </ul>
+        <a href="#" data-activates="nav-mobile" class="button-collapse"><i
+          class="material-icons accent-color-text">menu</i></a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+
+
+      <div class="container">
+        <h3>Rasterbator</h3>
+        <div class="divider"></div>
+        <div class="section">
+          <h5>Select your image</h5>
+          <p>Stuff</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section">
+          <h5>Page setup</h5>
+          <p>Stuff</p>
+
+          <div class="row">
+
+            <div class="col s12 m6">
+              
+              <div class="input-field col s6">
+                <input value="5" id="horizontalTilesCount" type="number" min="1" max="100">
+                <label class="active" for="horizontalTilesCount">Collumns</label>
+              </div>
+
+              <div class="input-field col s6">
+                <input value="2" id="verticalTilesCount" type="number" min="1" max="100">
+                <label class="active" for="verticalTilesCount">Rows</label>
+              </div>
+
+            </div>
+
+            <div class="col s12 m6">
+            <div id="setupCanvasWrapper">
+                <canvas id="setupCanvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          
+        </div>
+
+        <div class="divider"></div>
+        <div class="section">
+          <h5>Preview</h5>
+          <p>Stuff</p>
+          <div id="previewCanvasWrapper">
+            <canvas id="previewCanvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section">
+          <h5>Download</h5>
+          <p>Stuff</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section">
+          <h5>Printing Instructions</h5>
+          <p>Stuff</p>
+        </div>
+      </div>
+
+      
+
+
+      
+
+      <!--
+      <div id="sourceImageWrapper">
+        <img id="sourceImage" src="../static/images/queue_large.jpg" width="300" onload="sourceImageLoaded();"/>
+      </div>
+      -->
+      
+
+    </main>
+
+    <footer class="page-footer primary-color">
+      <div class="container">
+        <div class="row">
+          <div class="col l6 s12">
+            <h5 class="white-text">About IntelliQ.me</h5>
+            <p class="grey-text text-lighten-4">We think no one should waste lifetime while waiting. It doesn't matter where you are - you should be able to use the time until it's your turn effectively.
+              IntelliQ is a smart system to manage waiting queues and offers estimations about remaining waiting time.</p>
+            </div>
+            <div class="col l3 s12">
+              <h5 class="white-text">Connect</h5>
+              <ul>
+                <li><a class="white-text" href="https://www.facebook.com/Intelliq.me">Facebook</a></li>
+                <li><a class="white-text" href="https://twitter.com/IntelliQMe">Twitter</a></li>
+                <li><a class="white-text" href="https://www.google.com/+IntelliqMe">Google+</a></li>
+                <li><a class="white-text" href="mailto:mail@intelliq.me">E-Mail</a></li>
+              </ul>
+            </div>
+            <div class="col l3 s12">
+              <h5 class="white-text">Links</h5>
+              <ul>
+                <li><a class="white-text" href="https://play.google.com/store/apps/details?id=com.steppschuh.intelliq">Android App</a></li>
+                <li><a class="white-text" href="https://itunes.apple.com/pg/app/intelliq/id1019495717">iOS App</a></li>
+                <li><a class="white-text" href="${rootUrl}/admin/">Admin</a></li>
+                <li><a class="white-text" href="${rootUrl}/press/">Press</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-copyright">
+          <div class="container">
+            Developed with love by <a class="accent-color-text text-lighten-3" href="http://steppschuh.net/">Stephan Schultz</a>
+          </div>
+        </div>
+      </footer>
+
+      <!-- Scripts -->
+      <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+      <script src="../static/js/materialize.js"></script>
+      <script src="../static/js/vibrant.js"></script>
+      <script src="../static/js/posterizer.js"></script>
+      <script src="../static/js/init.js"></script>
+
+    </body>
+    </html>

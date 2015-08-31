@@ -1,0 +1,31 @@
+#nowCalledContainer {
+	margin-top: 5%;
+	margin-left: 5%;
+	margin-right: 5%;
+}
+
+#backgroundImageContainer {
+	z-index: -1;
+	position: fixed;
+	top: 0px;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
+	margin: -20px;
+	background-color: #FFF;
+}
+
+#backgroundImage {
+	width: 100%;
+	height: 100%;
+	opacity: 0.5;
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center;
+	-webkit-filter: blur(13px);
+	-moz-filter: blur(13px);
+	-o-filter: blur(13px);
+	-ms-filter: blur(13px);
+	filter: blur(13px);
+}
+
