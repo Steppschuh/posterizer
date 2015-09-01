@@ -15,7 +15,7 @@
     function init() {
       initRasterbation();
       var imageLoadedCallback = function() {
-        rasterbation.renderSetupCanvas();
+        rasterbation.refreshRenderings();
       }
 
       // small image:  https://farm8.staticflickr.com/7650/16853455205_96ca2b6c69_b.jpg
@@ -26,7 +26,7 @@
       
       // random image: http://lorempixel.com/1920/1080/nature/
 
-      rasterbation.setImage("http://lorempixel.com/1920/1080/nature/", imageLoadedCallback);
+      rasterbation.setImage("http://lorempixel.com/1920/1080/", imageLoadedCallback);
     }
   </script>
 
@@ -107,7 +107,7 @@
                   <div class="input-field col s3">
                     <select id="tileUnitSelector">
                       <option value="in" selected>Inches</option>
-                      <option value="mm">Millimeter</option>
+                      <option value="cm">Centimeters</option>
                     </select>
                     <label>Unit</label>
                   </div>
@@ -146,11 +146,10 @@
           <h5>Preview</h5>
           <p>Stuff</p>
           <div id="previewCanvasWrapper">
-            <canvas id="previewCanvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+            <canvas id="previewCanvas" width="300" height="300"></canvas>
           </div>
         </div>
 
-        <div class="divider"></div>
         <div class="section">
           <h5>Download</h5>
           <p>Stuff</p>

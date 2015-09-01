@@ -23,8 +23,10 @@ p {
   height: 300px;
 }
 
-
-
+#previewCanvasWrapper {
+  width: 100%;
+  height: 500px;
+}
 
 
 .button-collapse {
