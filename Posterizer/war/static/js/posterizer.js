@@ -517,6 +517,7 @@ var rasterbation = {
 	},
 
 	renderPDF: function() {
+		console.log("Exporting tiles to PDF file");
 
 		var orientation;
 		var size;
@@ -554,8 +555,7 @@ var rasterbation = {
 
 		doc.setFontSize(10);
 
-		//for (var tileIndex = 0; tileIndex <= this.sourceImageRaster.length; tileIndex++) {
-		for (var tileIndex = 0; tileIndex <= 2; tileIndex++) {
+		for (var tileIndex = 0; tileIndex < this.sourceImageRaster.length; tileIndex++) {
 			var tile = this.sourceImageRaster[tileIndex];
 			tile = this.scaleTile(tile, 1 / this.sourceImageScaleFactor);
 
@@ -569,7 +569,7 @@ var rasterbation = {
 			tileCanvasContext.drawImage(this.sourceImage, tile.x, tile.y, tile.width, tile.height, 0, 0, tileCanvas.width, tileCanvas.height);
 
 			// extract canvas data and render to PDF
-			tileImageData = tileCanvas.toDataURL("image/jpeg", imageQuality);			
+			tileImageData = tileCanvas.toDataURL("image/jpeg", imageQuality);
 			doc.addImage(tileImageData, 'JPEG', tilesHorizontalMargin, tilesVerticalMargin, this.targetTileWidth, this.targetTileHeight);
 
 			//doc.text(1, 1, "Placehoder for tile " + tileIndex);
@@ -587,6 +587,124 @@ var rasterbation = {
 		});
 
 		doc.save('rasterbation.pdf');
+	},
+
+	renderJPGs: function(link) {
+		console.log("Exporting tiles to JPG files");
+
+		// create ZIP file
+		var zip = new JSZip();
+		zip.file("info.txt", "Created by posterizer.online\n");
+		var tilesFolder = zip.folder("tiles");
+
+		// add raster
+		var previewCanvas = document.getElementById('setupCanvas');
+		zip.file("raster.jpg", getBase64FromCanvas(previewCanvas), {base64: true});
+
+		// add preview
+		var previewCanvas = document.getElementById('previewCanvas');
+		zip.file("preview.jpg", getBase64FromCanvas(previewCanvas), {base64: true});
+
+		// add tiles
+		var tileCanvas = document.createElement('canvas');
+		var tileCanvasContext = tileCanvas.getContext('2d');
+		tileCanvas.width  = this.targetTileWidthPX;
+		tileCanvas.height = this.targetTileHeightPX;
+
+		for (var tileIndex = 0; tileIndex < this.sourceImageRaster.length; tileIndex++) {
+			var tile = this.sourceImageRaster[tileIndex];
+			tile = this.scaleTile(tile, 1 / this.sourceImageScaleFactor);
+
+			// changing the canvas size resets its content
+			tileCanvas.width = tileCanvas.width;
+			tileCanvasContext.fillStyle = "#FFFFFF";
+			tileCanvasContext.fillRect(0, 0, tileCanvas.width, tileCanvas.height);
+
+			// project cropped source image to canvas
+			console.log("Projecting tile from: " + tile.x + "," + tile.y + "," + tile.width + "," + tile.height);
+			tileCanvasContext.drawImage(this.sourceImage, tile.x, tile.y, tile.width, tile.height, 0, 0, tileCanvas.width, tileCanvas.height);
+
+			var filename = "tile_row_" + (tile.verticalIndex + 1) + "_col_" + (tile.horizontalIndex + 1) + ".jpg";
+			
+			// add tile to ZIP
+			tilesFolder.file(filename, getBase64FromCanvas(tileCanvas), {base64: true});
+
+			/*
+			// save each tile as jpg
+			tileCanvas.toBlob(function(blob) {
+				saveAs(blob, filename);
+			}, "image/jpeg", 1);
+			*/
+		}
+
+		var zipFile = zip.generate({type:"blob"});
+		saveAs(zipFile, "rasterbation.zip");
+	},
+
+	renderJPGsAsync: function() {
+		this.renderer = new this.renderJPGsWorker();
+		this.renderer.startRendering();
+	},
+
+	renderJPGsWorker: function() {
+		this.tileIndex = 0;
+		this.renderTimeout = null;
+
+		// create ZIP file
+		this.zip = new JSZip();
+		this.zip.file("info.txt", "Created by posterizer.online\n");
+		this.tilesFolder = this.zip.folder("tiles");
+
+		// add raster
+		this.previewCanvas = document.getElementById('setupCanvas');
+		this.zip.file("raster.jpg", getBase64FromCanvas(this.previewCanvas), {base64: true});
+
+		// add preview
+		this.previewCanvas = document.getElementById('previewCanvas');
+		this.zip.file("preview.jpg", getBase64FromCanvas(this.previewCanvas), {base64: true});
+
+		// add tiles
+		this.tileCanvas = document.createElement('canvas');
+		this.tileCanvasContext = this.tileCanvas.getContext('2d');
+		this.tileCanvas.width  = rasterbation.targetTileWidthPX;
+		this.tileCanvas.height = rasterbation.targetTileHeightPX;
+
+		this.startRendering = function() {
+			this.tileIndex = 0;
+			this.renderInterval = setInterval(this.renderTile.bind(this), 0);
+		}
+
+		this.renderTile = function() {
+			if (this.tileIndex >= rasterbation.sourceImageRaster.length) {
+				console.log("All tiles rendered");
+
+				var zipFile = this.zip.generate({type:"blob"});
+				saveAs(zipFile, "rasterbation.zip");
+
+				clearInterval(this.renderInterval);
+				return;
+			}
+
+
+			var tile = rasterbation.sourceImageRaster[this.tileIndex];
+			tile = rasterbation.scaleTile(tile, 1 / rasterbation.sourceImageScaleFactor);
+
+			// changing the canvas size resets its content
+			this.tileCanvas.width = this.tileCanvas.width;
+			this.tileCanvasContext.fillStyle = "#FFFFFF";
+			this.tileCanvasContext.fillRect(0, 0, this.tileCanvas.width, this.tileCanvas.height);
+
+			// project cropped source image to canvas
+			console.log("Projecting tile " + this.tileIndex + " from: " + tile.x + "," + tile.y + "," + tile.width + "," + tile.height);
+			this.tileCanvasContext.drawImage(rasterbation.sourceImage, tile.x, tile.y, tile.width, tile.height, 0, 0, this.tileCanvas.width, this.tileCanvas.height);
+
+			var filename = "tile_row_" + (tile.verticalIndex + 1) + "_col_" + (tile.horizontalIndex + 1) + ".jpg";
+			
+			// add tile to ZIP
+			this.tilesFolder.file(filename, getBase64FromCanvas(this.tileCanvas), {base64: true});
+
+			this.tileIndex++;
+		}
 	}
 
 };
@@ -727,6 +845,16 @@ function initRasterbation() {
 		rasterbation.refreshRenderings(true);
 	};
 	
+	var downloadPDFButton = document.getElementById("downloadPDFButton");
+	downloadPDFButton.addEventListener('click', function() {
+		rasterbation.renderPDF();
+	}, false);
+
+	var downloadJPGsButton = document.getElementById("downloadJPGsButton");
+	downloadJPGsButton.addEventListener('click', function() {
+		//rasterbation.renderJPGs();
+		rasterbation.renderJPGsAsync();
+	}, false);
 }
 
 function restoreConfig() {
@@ -768,6 +896,11 @@ function restoreConfig() {
 */
 function gcd (a, b) {
     return (b == 0) ? a : gcd (b, a%b);
+}
+
+function getBase64FromCanvas(canvas) {
+	var canvasDataURL = canvas.toDataURL("image/jpeg", 1);
+	return canvasDataURL.substr(canvasDataURL.indexOf(',') + 1);
 }
 
 function modifyRgbByFactor(rgb, factor) {

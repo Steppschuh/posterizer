@@ -158,7 +158,8 @@
         <div class="section">
           <h5>Download</h5>
           <p>Stuff</p>
-          <a class="waves-effect waves-light btn" href="javascript:rasterbation.renderPDF();"><i class="material-icons left"></i>Create PDF</a>
+          <a id="downloadPDFButton" class="waves-effect waves-light btn"><i class="material-icons left"></i>Create PDF</a>
+          <a id="downloadJPGsButton" class="waves-effect waves-light btn"><i class="material-icons left"></i>Create JPGs</a>
         </div>
 
         <div class="divider"></div>
@@ -221,7 +222,9 @@
       <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
       <script src="../static/js/materialize.js"></script>
       <script src="../static/js/vibrant.js"></script>
+      <script src="../static/js/canvas-toBlob.js"></script>
       <script src="../static/js/jspdf.debug.js"></script>
+      <script src="../static/js/jszip.js"></script>
       <script src="../static/js/posterizer.js"></script>
       <script src="../static/js/init.js"></script>
 
