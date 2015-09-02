@@ -20,21 +20,26 @@ var rasterbation = {
 	},
 
 	setImage: function(imageUrl, callback) {
-		var sourceImage = new Image();
-	    sourceImage.onload = function() {
-	    	rasterbation.sourceImage = this;
+		try {
+			var sourceImage = new Image();
+		    sourceImage.onload = function() {
+			rasterbation.sourceImage = this;
 
-	    	console.log("Image loaded: " + this.src);
+		    	console.log("Image loaded: " + this.src);
 
-	    	rasterbation.createImageSwatches();
+		    	rasterbation.createImageSwatches();
 
-	    	if (callback != null) {
-	    		callback();
-	    	}
-	    };
+		    	if (callback != null) {
+		    		callback();
+		    	}
+		    };
 
-	    //sourceImage.crossOrigin = "Anonymous";
-	    sourceImage.src = imageUrl;
+		    sourceImage.crossOrigin = "Anonymous";
+		    sourceImage.src = imageUrl;
+		} catch (ex) {
+			console.log("Unable to load image, most likely because of Cross-Origin Resource Sharing");
+			console.log(ex);
+		}
 	},
 
 	createImageSwatches: function() {
@@ -265,28 +270,31 @@ var rasterbation = {
 		previewCanvas.width = previewCanvasWrapper.offsetWidth;
 		previewCanvas.height = previewCanvasWrapper.offsetHeight;
 		
-		var wallColor = "rgba(240, 240, 240, 1)";
+		var wallColor = "rgba(250, 250, 250, 1)";
 		var floorColor = "rgba(200, 200, 200, 1)";
 		var borderColor = "rgba(100, 100, 100, 1)";
 		var transparentColor = "rgba(255, 255, 255, 0)";
 
+		var lineWidth = inchesToPreviewPixels(0.1);
+
 		// try to adjust colors if swatches are available
 		if (this.sourceImageSwatches != null) {
-			swatch = this.getSwatch("LightVibrant");
+			swatch = this.getSwatch("Vibrant");
 			if (swatch != null) {
 				var swatchRGB = swatch.getRgb();
 				// make sure that the color is not too dark
 				if (swatchRGB[0] + swatchRGB[1] + swatchRGB[2] < 100) {
 					swatchRGB = modifyRgbByFactor(swatchRGB, 2.5);
 				}
-				wallColor = "rgba(" + swatchRGB[0] + "," + swatchRGB[1] + "," + swatchRGB[2] + ", 0.1)";
+				wallColor = "rgba(" + swatchRGB[0] + "," + swatchRGB[1] + "," + swatchRGB[2] + ", 0.05)";
 				console.log("Wall color updated to: " + wallColor);
 			}
 
 			swatch = this.getSwatch("DarkMuted");
 			if (swatch != null) {
-				var swatchRGB = swatch.getRgb();				
-				borderColor = "rgba(" + swatchRGB[0] + "," + swatchRGB[1] + "," + swatchRGB[2] + ", 1)";
+				var swatchRGB = swatch.getRgb();
+				//borderColor = "rgba(" + swatchRGB[0] + "," + swatchRGB[1] + "," + swatchRGB[2] + ", 1)";
+				borderColor = "rgba(240, 240, 240, 1)";				
 				console.log("Border color updated to: " + borderColor);
 
 				floorColor = "rgba(" + swatchRGB[0] + "," + swatchRGB[1] + "," + swatchRGB[2] + ", 0.2)";
@@ -296,16 +304,30 @@ var rasterbation = {
 		}
 
 		// draw background
+		previewCanvasContext.fillStyle = "#FFFFFF";
+		previewCanvasContext.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
 		previewCanvasContext.fillStyle = wallColor;
 		previewCanvasContext.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
 
 		// draw baseline
 		var baselineMarginBottom = 50;
-		var baselineHeight = inchesToPreviewPixels(2);
+		var baselineHeight = inchesToPreviewPixels(3);
 
 		previewCanvasContext.setTransform(1, 0, 0, 1, 0, previewCanvas.height - baselineMarginBottom);
 		previewCanvasContext.fillStyle = borderColor;
 		previewCanvasContext.fillRect(0, -baselineHeight, previewCanvas.width, baselineHeight);
+
+		// draw baseline outline
+		previewCanvasContext.lineWidth = lineWidth;
+		previewCanvasContext.strokeStyle = "rgba(0, 0, 0, 1)";
+
+		previewCanvasContext.beginPath();
+		previewCanvasContext.moveTo(0, 0);
+		previewCanvasContext.lineTo(previewCanvas.width, 0);
+		previewCanvasContext.moveTo(0, -baselineHeight);
+		previewCanvasContext.lineTo(previewCanvas.width, -baselineHeight);
+		previewCanvasContext.stroke();
 
 		previewCanvasContext.save();
 
@@ -314,10 +336,10 @@ var rasterbation = {
 		previewCanvasContext.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
 
 		// draw door
-		var doorMarginLeft = 110;
+		var doorMarginLeft = (previewCanvas.width / 10) + 10;
 		var doorHeight = inchesToPreviewPixels(80.315);
 		var doorWidth = inchesToPreviewPixels(32.2835);
-		var doorFrameWidth = inchesToPreviewPixels(2);
+		var doorFrameWidth = inchesToPreviewPixels(3);
 
 		previewCanvasContext.translate(doorMarginLeft, 0);
 
@@ -326,15 +348,96 @@ var rasterbation = {
 		previewCanvasContext.fillRect(-doorFrameWidth, -doorHeight - doorFrameWidth, doorWidth + doorFrameWidth + doorFrameWidth, doorHeight + doorFrameWidth);
 
 		// draw door wood
-		previewCanvasContext.fillStyle = "rgba(255, 255, 255, 1)";
+		previewCanvasContext.fillStyle = "rgba(245, 245, 245, 1)";
 		previewCanvasContext.fillRect(0, -doorHeight, doorWidth, doorHeight);
+
+		// draw door outlines
+		// inner frame
+		previewCanvasContext.lineWidth = lineWidth;
+		previewCanvasContext.strokeStyle = "rgba(0, 0, 0, 1)";
+
+		previewCanvasContext.beginPath();
+		previewCanvasContext.moveTo(0, 0);
+		previewCanvasContext.lineTo(0, -doorHeight - doorFrameWidth);
+		previewCanvasContext.moveTo(0, -doorHeight);
+		previewCanvasContext.lineTo(doorWidth, -doorHeight);
+		previewCanvasContext.moveTo(doorWidth, -doorHeight - doorFrameWidth);
+		previewCanvasContext.lineTo(doorWidth, 0);
+		previewCanvasContext.stroke();
+
+		// outer frame
+		previewCanvasContext.beginPath();
+		previewCanvasContext.moveTo(-doorFrameWidth, 0);
+		previewCanvasContext.lineTo(-doorFrameWidth, -doorHeight - doorFrameWidth);
+		previewCanvasContext.lineTo(doorWidth + doorFrameWidth, -doorHeight - doorFrameWidth);
+		previewCanvasContext.lineTo(doorWidth + doorFrameWidth, 0);
+		previewCanvasContext.stroke();
+
+		// draw frame decoration
+		previewCanvasContext.lineWidth = lineWidth / 2;
+		previewCanvasContext.strokeStyle = "rgba(0, 0, 0, 1)";
+
+
+		previewCanvasContext.beginPath();
+
+		// vertical lines
+		var leftVerticalLine = doorFrameWidth + doorFrameWidth;
+		var rightVerticalLine = doorWidth - (doorFrameWidth + doorFrameWidth);
+		previewCanvasContext.moveTo(leftVerticalLine, 0);
+		previewCanvasContext.lineTo(leftVerticalLine, -doorHeight);
+		previewCanvasContext.moveTo(rightVerticalLine, 0);
+		previewCanvasContext.lineTo(rightVerticalLine, -doorHeight);
+
+		// horizontal lines
+		var horizonatlLineSquare = rightVerticalLine - leftVerticalLine;
+		var horizonatlLineOffset = horizonatlLineSquare / 5;
+		var horizontalLine = -(doorHeight / 2) + (horizonatlLineSquare / 2);
+		previewCanvasContext.moveTo(leftVerticalLine, horizontalLine);
+		previewCanvasContext.lineTo(rightVerticalLine, horizontalLine);
+
+		horizontalLine = horizontalLine + (horizonatlLineOffset);
+		previewCanvasContext.moveTo(leftVerticalLine, horizontalLine);
+		previewCanvasContext.lineTo(rightVerticalLine, horizontalLine);
+
+		horizontalLine = horizontalLine + (horizonatlLineSquare);
+		previewCanvasContext.moveTo(leftVerticalLine, horizontalLine);
+		previewCanvasContext.lineTo(rightVerticalLine, horizontalLine);
+
+		horizontalLine = -(doorHeight / 2) - (horizonatlLineSquare / 2);
+		previewCanvasContext.moveTo(leftVerticalLine, horizontalLine);
+		previewCanvasContext.lineTo(rightVerticalLine, horizontalLine);
+
+		horizontalLine = horizontalLine - (horizonatlLineOffset);
+		previewCanvasContext.moveTo(leftVerticalLine, horizontalLine);
+		previewCanvasContext.lineTo(rightVerticalLine, horizontalLine);
+
+		horizontalLine = horizontalLine - (horizonatlLineSquare);
+		previewCanvasContext.moveTo(leftVerticalLine, horizontalLine);
+		previewCanvasContext.lineTo(rightVerticalLine, horizontalLine);
+
+		previewCanvasContext.stroke();
+
+		// door knot
+		var knotCenterX = doorWidth - (leftVerticalLine / 2);
+		var knotCenterY = -(doorHeight / 2);
+		var knotRadius = leftVerticalLine / 4;
+		
+		previewCanvasContext.lineWidth = lineWidth;
+		previewCanvasContext.strokeStyle = "rgba(0, 0, 0, 1)";
+		previewCanvasContext.fillStyle = "rgba(200, 200, 200, 1)";
+
+		previewCanvasContext.beginPath();
+		previewCanvasContext.arc(knotCenterX, knotCenterY, knotRadius, 0, 2 * Math.PI, false);
+		previewCanvasContext.fill();
+		previewCanvasContext.stroke();
+
 
 		previewCanvasContext.restore();
 
 		// draw images
 		var imageMarginLeft = inchesToPreviewPixels(30);
 		var imageMarginBottom = inchesToPreviewPixels(40);
-		var imageTileMargin = inchesToPreviewPixels(1);
+		var imageTileMargin = inchesToPreviewPixels(0.8);
 		var imageTileWidth = inchesToPreviewPixels(this.targetTileWidth);
 		var imageTileHeight = inchesToPreviewPixels(this.targetTileHeight);
 
@@ -372,48 +475,139 @@ var rasterbation = {
 		previewCanvasContext.resetTransform();
 
 		// draw gradients to fade out edges
-		var fadeOutAmountLeft = 100;
-		var fadeOutAmountRight = 300;
-		var fadeOutAmountTop = 50;
-		var fadeOutAmountBottom = 0;
+		if (true) {
+			var fadeOutAmountLeft = previewCanvas.width / 10;
+			var fadeOutAmountRight = previewCanvas.width / 4;
+			var fadeOutAmountTop = previewCanvas.width / 20;
+			var fadeOutAmountBottom = 0;
 
-		// left edge		
-		var grd = previewCanvasContext.createLinearGradient(0, 0, fadeOutAmountLeft, 0);
-		grd.addColorStop(1, transparentColor);
-		grd.addColorStop(0, "#FFFFFF");
+			// left edge		
+			var grd = previewCanvasContext.createLinearGradient(0, 0, fadeOutAmountLeft, 0);
+			grd.addColorStop(1, transparentColor);
+			grd.addColorStop(0, "#FFFFFF");
 
-		previewCanvasContext.fillStyle = grd;
-		previewCanvasContext.fillRect(0, 0, fadeOutAmountLeft, previewCanvas.height);
+			previewCanvasContext.fillStyle = grd;
+			previewCanvasContext.fillRect(0, 0, fadeOutAmountLeft, previewCanvas.height);
+			
+			// right edge
+			var grd = previewCanvasContext.createLinearGradient(previewCanvas.width - fadeOutAmountRight, 0, previewCanvas.width, 0);
+			grd.addColorStop(0, transparentColor);
+			grd.addColorStop(1, "#FFFFFF");
+
+			previewCanvasContext.fillStyle = grd;
+			previewCanvasContext.fillRect(previewCanvas.width - fadeOutAmountRight, 0, fadeOutAmountRight, previewCanvas.height);
+			
+			// top edge
+			var grd = previewCanvasContext.createLinearGradient(0, 0, 0, fadeOutAmountTop);
+			grd.addColorStop(1, transparentColor);
+			grd.addColorStop(0, "#FFFFFF");
+
+			previewCanvasContext.fillStyle = grd;
+			previewCanvasContext.fillRect(0, 0, previewCanvas.width, fadeOutAmountTop);
+			
+			// bottom edge
+			var grd = previewCanvasContext.createLinearGradient(0, previewCanvas.height - fadeOutAmountBottom, 0, previewCanvas.height);
+			grd.addColorStop(0, transparentColor);
+			grd.addColorStop(1, "#FFFFFF");
+
+			previewCanvasContext.fillStyle = grd;
+			previewCanvasContext.fillRect(0, previewCanvas.height - fadeOutAmountBottom, previewCanvas.width, previewCanvas.height);
+		}
 		
-		// right edge
-		var grd = previewCanvasContext.createLinearGradient(previewCanvas.width - fadeOutAmountRight, 0, previewCanvas.width, 0);
-		grd.addColorStop(0, transparentColor);
-		grd.addColorStop(1, "#FFFFFF");
+	},
 
-		previewCanvasContext.fillStyle = grd;
-		previewCanvasContext.fillRect(previewCanvas.width - fadeOutAmountRight, 0, fadeOutAmountRight, previewCanvas.height);
-		
-		// top edge
-		var grd = previewCanvasContext.createLinearGradient(0, 0, 0, fadeOutAmountTop);
-		grd.addColorStop(1, transparentColor);
-		grd.addColorStop(0, "#FFFFFF");
+	renderPDF: function() {
 
-		previewCanvasContext.fillStyle = grd;
-		previewCanvasContext.fillRect(0, 0, previewCanvas.width, fadeOutAmountTop);
-		
-		// bottom edge
-		var grd = previewCanvasContext.createLinearGradient(0, previewCanvas.height - fadeOutAmountBottom, 0, previewCanvas.height);
-		grd.addColorStop(0, transparentColor);
-		grd.addColorStop(1, "#FFFFFF");
+		var orientation;
+		var size;
+		var unit = "in"
+		var imageQuality = 1;
 
-		previewCanvasContext.fillStyle = grd;
-		previewCanvasContext.fillRect(0, previewCanvas.height - fadeOutAmountBottom, previewCanvas.width, previewCanvas.height);
+		var printHorizontalMargin = 0.75;
+		var printVerticalMargin = 0.75;
+
+		// update PDF orientation
+		var tileOrientationSelector = document.getElementById("tileOrientationSelector");
+		orientation = tileOrientationSelector.value;
+
+		// update PDF size
+		var tilePresetSelector = document.getElementById("tilePresetSelector");
+		if (tilePresetSelector.value != "custom") {
+			size = tilePresetSelector.value;
+		} else {
+			// TODO: offer selection
+			size = "a4";
+		}
+
+		var doc = new jsPDF(orientation, unit, size);
+
+		var tileCanvas = document.createElement('canvas');
+		var tileCanvasContext = tileCanvas.getContext('2d');
+		tileCanvas.width  = this.targetTileWidthPX;
+		tileCanvas.height = this.targetTileHeightPX;
+
+		var tileImageData;
+		var tilesHorizontalMargin = 0;
+		var tilesVerticalMargin = 0;
 		
-	}	
+		//doc.addImage(tileImageData, 'JPEG', tilesHorizontalMargin, tilesVerticalMargin, this.targetTileWidth, this.targetTileHeight);
+
+		doc.setFontSize(10);
+
+		//for (var tileIndex = 0; tileIndex <= this.sourceImageRaster.length; tileIndex++) {
+		for (var tileIndex = 0; tileIndex <= 2; tileIndex++) {
+			var tile = this.sourceImageRaster[tileIndex];
+			tile = this.scaleTile(tile, 1 / this.sourceImageScaleFactor);
+
+			// changing the canvas size resets its content
+			tileCanvas.width = tileCanvas.width;
+			tileCanvasContext.fillStyle = "#FFFFFF";
+			tileCanvasContext.fillRect(0, 0, tileCanvas.width, tileCanvas.height);
+
+			// project cropped source image to canvas
+			console.log("Projecting tile from: " + tile.x + "," + tile.y + "," + tile.width + "," + tile.height);
+			tileCanvasContext.drawImage(this.sourceImage, tile.x, tile.y, tile.width, tile.height, 0, 0, tileCanvas.width, tileCanvas.height);
+
+			// extract canvas data and render to PDF
+			tileImageData = tileCanvas.toDataURL("image/jpeg", imageQuality);			
+			doc.addImage(tileImageData, 'JPEG', tilesHorizontalMargin, tilesVerticalMargin, this.targetTileWidth, this.targetTileHeight);
+
+			//doc.text(1, 1, "Placehoder for tile " + tileIndex);
+
+			// add a new page for the next tile
+			doc.addPage();
+		}
+
+		doc.setProperties({
+			title: 'Posterizer Rasterbated Image',
+			subject: 'This rasterbation has been created using http://posterizer.online',
+			author: 'Posterizer',
+			keywords: 'Posterizer, Rasterbation',
+			creator: 'Posterizer'
+		});
+
+		doc.save('rasterbation.pdf');
+	}
+
 };
 
 window.addEventListener('resize', function(event){
-  rasterbation.refreshRenderings(false);
+	var width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+	var height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+
+	var previewCanvasWidth = document.getElementById("previewCanvasWrapper").offsetWidth;
+	if (previewCanvasWidth > 900) {
+		rasterbation.sourceImagePreviewScaleFactor = 5;
+	} else if (previewCanvasWidth > 700) {
+		rasterbation.sourceImagePreviewScaleFactor = 4;
+	} else if (previewCanvasWidth > 500) {
+		rasterbation.sourceImagePreviewScaleFactor = 3;
+	} else if (previewCanvasWidth > 300) {
+		rasterbation.sourceImagePreviewScaleFactor = 2;
+	}
+	document.getElementById("previewCanvasWrapper").style.height = previewCanvasWidth / 1.8 + "px";
+
+	rasterbation.refreshRenderings(false);
 });
 
 function initRasterbation() {
@@ -455,7 +649,7 @@ function initRasterbation() {
 					rasterbation.targetTileWidth = 16.53;
 					rasterbation.targetTileHeight = 11.69;
 				}
-			} else if (value == "usletter") {
+			} else if (value == "letter") {
 				if (portrait) {
 					rasterbation.targetTileWidth = 8.5;
 					rasterbation.targetTileHeight = 11;
@@ -463,7 +657,7 @@ function initRasterbation() {
 					rasterbation.targetTileWidth = 11;
 					rasterbation.targetTileHeight = 8.5;
 				}
-			} else if (value == "uslegal") {
+			} else if (value == "legal") {
 				if (portrait) {
 					rasterbation.targetTileWidth = 8.5;
 					rasterbation.targetTileHeight = 14;
@@ -532,8 +726,41 @@ function initRasterbation() {
 		}
 		rasterbation.refreshRenderings(true);
 	};
-
 	
+}
+
+function restoreConfig() {
+	var tileWidthParam = getUrlParam("width");
+	var tileHeightParam = getUrlParam("height");
+	var tileUnitParam = getUrlParam("tileUnit");
+	var collumnsParam = getUrlParam("collumns");
+	var rowsParam = getUrlParam("rows");
+
+	if (tileWidthParam != null && tileHeightParam != null) {
+		var tilePresetSelector = document.getElementById("tilePresetSelector");
+		tilePresetSelector.value = "custom";
+
+		var tileWidth = document.getElementById("tileWidth");
+		tileWidth.value = parseInt(tileWidthParam);
+
+		var tileHeight = document.getElementById("tileHeight");
+		tileHeight.value = parseInt(tileHeightParam);
+	}
+
+	if (tileUnitParam != null) {
+		var tileUnitSelector = document.getElementById("tileUnitSelector");
+		tileUnitSelector.value = tileUnitParam;
+	}
+
+	if (collumnsParam != null) {
+		var horizontalTilesCount = document.getElementById("horizontalTilesCount");
+		horizontalTilesCount.value = parseInt(collumnsParam);
+	}
+
+	if (rowsParam != null) {
+		var verticalTilesCount = document.getElementById("verticalTilesCount");
+		verticalTilesCount.value = parseInt(rowsParam);
+	}
 }
 
 /*
