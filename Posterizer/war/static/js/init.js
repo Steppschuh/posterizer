@@ -2,7 +2,8 @@
   $(function(){
 
   	$('select').material_select();
-
+  	$('.button-collapse').sideNav();
+  	
 	window.dispatchEvent(new Event('resize'));
 
   }); // end of document ready

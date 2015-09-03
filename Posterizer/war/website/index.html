@@ -1,22 +1,23 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html lang="en">
 <head>
-  <title>IntelliQ.me - Smarter Waiting</title>
+  <title>Rasterbator</title>
 
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
 
   <!-- CSS  -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="../static/css/dropzone.css" type="text/css" rel="stylesheet" media="screen,projection" />
   <link href="../static/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection" />
   <link href="../static/css/style.css" type="text/css" rel="stylesheet" media="screen,projection" />
   
   <script type="text/javascript">
-    function init() {
+    function loaded() {
       // read URL parameters, cookies, etc
       restoreConfig();
 
-      // register listeners, create objects
+      // register listeners, create objects      
       initRasterbation();
 
       var imageLoadedCallback = function() {
@@ -37,12 +38,12 @@
 
 </head>
 
-<body onload="init();">
+<body onload="loaded();">
 
   <header>
     <nav class="primary-color" role="navigation">
       <div class="nav-wrapper container">
-        <a id="logo-container" href="${rootUrl}" class="brand-logo">IntelliQ.me</a>
+        <a id="logo-container" href="${rootUrl}" class="brand-logo">Posterizer</a>
         <ul class="right hide-on-med-and-down">
 
         </ul>
@@ -61,17 +62,18 @@
 
 
       <div class="container">
-        <h3>Rasterbator</h3>
+        <h4>Rasterbator</h4>
+        <p>The rasterbator allows you to create posters larger than a standard page, using the tiled printing method. It will rasterize any image and output files that can be printed at home and reassemble to the original image. Inspired by the original <a href="http://arje.net/rasterbator" target="_blank">rasterbator application</a>.</p>
         <div class="divider"></div>
         <div class="section">
           <h5>Select your image</h5>
-          <p>Stuff</p>
+          <form action="http://posterizer.online/upload/" class="dropzone" id="imageDropzone"></form>
         </div>
 
         <div class="divider"></div>
         <div class="section">
           <h5>Page setup</h5>
-          <p>Stuff</p>
+          <p>Set the desired size of a single tile and the amount of tiles that you want to print. Choose "Custom" to use specific dimesnions. Keep in mind that your image will be scaled to fill all tiles, so make sure that you provide a high resolution image.</p>
 
           <div class="row">
 
@@ -149,7 +151,7 @@
         <div class="divider"></div>
         <div class="section">
           <h5>Preview</h5>
-          <p>Stuff</p>
+          <p>This is how your rasterbation will look like in relation to a standard door (2m / 80in high).</p>
           <div id="previewCanvasWrapper">
             <canvas id="previewCanvas" width="300" height="300"></canvas>
           </div>
@@ -157,15 +159,24 @@
 
         <div class="section">
           <h5>Download</h5>
-          <p>Stuff</p>
-          <a id="downloadPDFButton" class="waves-effect waves-light btn"><i class="material-icons left"></i>Create PDF</a>
-          <a id="downloadJPGsButton" class="waves-effect waves-light btn"><i class="material-icons left"></i>Create JPGs</a>
+          <p>If you are happy with your rasterbation, download the rasterized image tiles. Export may takes a few seconds, depending on your page setup. Make sure that you have sufficent memory available, otherwise the export may not work properly.</p>
+
+          <div class="row">
+            <div class="col s12 m6">
+              <p>Export to PDF if you want to directly pass this rasterbation to your printer. Each page will contain an image tile at maximum quality.</p>
+              <a id="downloadPDFButton" class="waves-effect waves-light btn"><i class="material-icons left"></i>Create PDF</a>
+            </div>
+            <div class="col s12 m6">
+              <p>Export to JPG if you want to continue working on the image tiles. You will get a ZIP file containing uncompressed JPG files and assemble instructions.</p>
+              <a id="downloadJPGsButton" class="waves-effect waves-light btn"><i class="material-icons left"></i>Create JPGs</a>
+            </div>
+          </div>
         </div>
 
         <div class="divider"></div>
         <div class="section">
           <h5>Printing Instructions</h5>
-          <p>Stuff</p>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum nunc, lacinia id facilisis id, egestas sed mi. Phasellus interdum lacinia sapien id cursus. Donec vitae erat et nisl iaculis imperdiet. Pellentesque vitae massa quis magna ullamcorper malesuada. Ut tempor tempor ante, non interdum mi sollicitudin vel. Suspendisse sit amet tortor sed purus consectetur dignissim molestie eu quam. Maecenas fringilla elit at tellus sodales aliquam.</p>
         </div>
       </div>
 
@@ -187,9 +198,8 @@
       <div class="container">
         <div class="row">
           <div class="col l6 s12">
-            <h5 class="white-text">About IntelliQ.me</h5>
-            <p class="grey-text text-lighten-4">We think no one should waste lifetime while waiting. It doesn't matter where you are - you should be able to use the time until it's your turn effectively.
-              IntelliQ is a smart system to manage waiting queues and offers estimations about remaining waiting time.</p>
+            <h5 class="white-text">About Posterizer</h5>
+            <p class="grey-text text-lighten-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vulputate id massa ut euismod. Praesent pulvinar, metus at volutpat feugiat, mauris nunc mollis lectus, sed pulvinar urna neque vitae leo.</p>
             </div>
             <div class="col l3 s12">
               <h5 class="white-text">Connect</h5>
@@ -225,6 +235,7 @@
       <script src="../static/js/canvas-toBlob.js"></script>
       <script src="../static/js/jspdf.debug.js"></script>
       <script src="../static/js/jszip.js"></script>
+      <script src="../static/js/dropzone.js"></script>
       <script src="../static/js/posterizer.js"></script>
       <script src="../static/js/init.js"></script>
 

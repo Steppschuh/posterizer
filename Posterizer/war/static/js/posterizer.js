@@ -1,3 +1,4 @@
+initDropZone();
 
 var rasterbation = {
 	horizontalTilesCount: null,
@@ -36,6 +37,8 @@ var rasterbation = {
 
 		    sourceImage.crossOrigin = "Anonymous";
 		    sourceImage.src = imageUrl;
+
+		    rasterbation.sourceImageRaster = null;
 		} catch (ex) {
 			console.log("Unable to load image, most likely because of Cross-Origin Resource Sharing");
 			console.log(ex);
@@ -855,6 +858,60 @@ function initRasterbation() {
 		//rasterbation.renderJPGs();
 		rasterbation.renderJPGsAsync();
 	}, false);
+}
+
+function initDropZone() {
+	console.log("Initializing drop zone");
+
+	Dropzone.options.imageDropzone = {
+		paramName: "imageUpload", // The name that will be used to transfer the file
+		maxFilesize: 500, // MB
+		uploadMultiple: false,
+		acceptedFiles: "image/*",
+		init: function() {
+			this.on("addedfile", function(file) {
+				console.log("Dropzone added file");
+			});
+
+			this.on("complete", function(file) {
+				console.log("Dropzone complete");
+				//console.log(document.getElementById("imageDropzone").files.getAcceptedFiles());
+			});
+			this.on("thumbnail", function(file, dataUrl) {
+				console.log("Dropzone thumbnail");
+
+				var targetThumbnailWidth = file.width;
+				var targetThumbnailHeight = file.height;
+				
+				if (this.options.thumbnailWidth != targetThumbnailWidth || this.options.thumbnailHeight != targetThumbnailHeight) {
+					console.log("Setting dropzone thumbnail size to: " + targetThumbnailWidth + "x" + targetThumbnailHeight);
+					this.options.thumbnailWidth = file.width;
+					this.options.thumbnailHeight = file.height;
+					this.createThumbnail(file);
+				} else {
+					var imageLoadedCallback = function() {
+						rasterbation.refreshRenderings();
+					}
+					rasterbation.setImage(dataUrl, imageLoadedCallback);
+				}
+			});
+			this.on("uploadprogress", function(file, progress, bytesSent) {
+				console.log("Dropzone uploadprogress: " + progress);
+			});
+			this.on("success", function(file, response) {
+				console.log("Dropzone success: " + response);
+			});
+		},
+		accept: function(file, done) {
+			if (file.name == "justinbieber.jpg") {
+				done("Naha, you don't.");
+			} else {
+				done();
+			}
+		}
+	};
+	//var imageDropzoneForm = document.getElementById("imageDropzone");
+	//var imageDropzone = Dropzone.getElement(imageDropzoneForm);
 }
 
 function restoreConfig() {
