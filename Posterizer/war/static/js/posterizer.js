@@ -15,6 +15,8 @@ var rasterbation = {
 	sourceImagePreviewScaleFactor: 5,
 	sourceImageSwatches: null,
 
+	sampleImageUrl: "http://lorempixel.com/1920/1080/nature/",
+
 	calculateNeededPX: function() {
 		this.targetTileWidthPX = this.targetTileWidth * this.targetTileDPI;
 		this.targetTileHeightPX = this.targetTileHeight * this.targetTileDPI;
@@ -37,10 +39,10 @@ var rasterbation = {
 
 		    sourceImage.crossOrigin = "Anonymous";
 		    sourceImage.src = imageUrl;
-
 		    rasterbation.sourceImageRaster = null;
 		} catch (ex) {
-			console.log("Unable to load image, most likely because of Cross-Origin Resource Sharing");
+			Materialize.toast("Unable to load image", 4000);
+			console.log("Unable to load image, most likely because of Cross-Origin Resource Sharing");			
 			console.log(ex);
 		}
 	},
@@ -515,133 +517,104 @@ var rasterbation = {
 
 			previewCanvasContext.fillStyle = grd;
 			previewCanvasContext.fillRect(0, previewCanvas.height - fadeOutAmountBottom, previewCanvas.width, previewCanvas.height);
-		}
-		
+		}	
 	},
 
-	renderPDF: function() {
-		console.log("Exporting tiles to PDF file");
+	renderPDFAsync: function() {
+		this.renderer = new this.renderPDFWorker();
+		this.renderer.startRendering();
+	},
 
-		var orientation;
-		var size;
-		var unit = "in"
-		var imageQuality = 1;
+	renderPDFWorker: function() {
+		this.tileIndex = 0;
+		this.renderTimeout = null;
 
-		var printHorizontalMargin = 0.75;
-		var printVerticalMargin = 0.75;
+		this.orientation = null;
+		this.size = null;
+		this.unit = "in"
+		this.imageQuality = 1;
+
+		this.printHorizontalMargin = 0.75;
+		this.printVerticalMargin = 0.75;
 
 		// update PDF orientation
-		var tileOrientationSelector = document.getElementById("tileOrientationSelector");
-		orientation = tileOrientationSelector.value;
+		this.tileOrientationSelector = document.getElementById("tileOrientationSelector");
+		this.orientation = this.tileOrientationSelector.value;
 
 		// update PDF size
-		var tilePresetSelector = document.getElementById("tilePresetSelector");
-		if (tilePresetSelector.value != "custom") {
-			size = tilePresetSelector.value;
+		this.tilePresetSelector = document.getElementById("tilePresetSelector");
+		if (this.tilePresetSelector.value != "custom") {
+			this.size = this.tilePresetSelector.value;
 		} else {
 			// TODO: offer selection
-			size = "a4";
+			this.size = "a4";
 		}
 
-		var doc = new jsPDF(orientation, unit, size);
+		this.doc = new jsPDF(this.orientation, this.unit, this.size);
 
-		var tileCanvas = document.createElement('canvas');
-		var tileCanvasContext = tileCanvas.getContext('2d');
-		tileCanvas.width  = this.targetTileWidthPX;
-		tileCanvas.height = this.targetTileHeightPX;
+		this.tileCanvas = document.createElement('canvas');
+		this.tileCanvasContext = this.tileCanvas.getContext('2d');
+		this.tileCanvas.width  = rasterbation.targetTileWidthPX;
+		this.tileCanvas.height = rasterbation.targetTileHeightPX;
 
-		var tileImageData;
-		var tilesHorizontalMargin = 0;
-		var tilesVerticalMargin = 0;
-		
-		//doc.addImage(tileImageData, 'JPEG', tilesHorizontalMargin, tilesVerticalMargin, this.targetTileWidth, this.targetTileHeight);
+		this.tileImageData = null;
+		this.tilesHorizontalMargin = 0;
+		this.tilesVerticalMargin = 0;
 
-		doc.setFontSize(10);
+		this.startRendering = function() {
+			this.tileIndex = 0;
+			Materialize.toast("Starting export", 2000);
+			this.renderInterval = setInterval(this.renderTile.bind(this), 100);
+			rasterbation.disableRendering();
+		}
 
-		for (var tileIndex = 0; tileIndex < this.sourceImageRaster.length; tileIndex++) {
-			var tile = this.sourceImageRaster[tileIndex];
-			tile = this.scaleTile(tile, 1 / this.sourceImageScaleFactor);
+		this.renderTile = function() {			
+			if (this.tileIndex >= rasterbation.sourceImageRaster.length) {
+				console.log("All tiles rendered");
+				clearInterval(this.renderInterval);
+				
+				Materialize.toast("Export finished", 2000);
+
+				this.doc.setProperties({
+					title: 'Posterizer Rasterbated Image',
+					subject: 'This rasterbation has been created using http://posterizer.online',
+					author: 'Posterizer',
+					keywords: 'Posterizer, Rasterbation',
+					creator: 'Posterizer'
+				});
+
+				this.doc.save('rasterbation.pdf');
+
+				rasterbation.enableRendering();
+				return;
+			}
+
+			// report progress every 10 tiles
+			if ((this.tileIndex + 1) % 10 == 0) {
+				Materialize.toast("Rendering tile " + (this.tileIndex + 1), 500);
+			}
+			
+			var tile = rasterbation.sourceImageRaster[this.tileIndex];
+			tile = rasterbation.scaleTile(tile, 1 / rasterbation.sourceImageScaleFactor);
 
 			// changing the canvas size resets its content
-			tileCanvas.width = tileCanvas.width;
-			tileCanvasContext.fillStyle = "#FFFFFF";
-			tileCanvasContext.fillRect(0, 0, tileCanvas.width, tileCanvas.height);
+			this.tileCanvas.width = this.tileCanvas.width;
+			this.tileCanvasContext.fillStyle = "#FFFFFF";
+			this.tileCanvasContext.fillRect(0, 0, this.tileCanvas.width, this.tileCanvas.height);
 
 			// project cropped source image to canvas
 			console.log("Projecting tile from: " + tile.x + "," + tile.y + "," + tile.width + "," + tile.height);
-			tileCanvasContext.drawImage(this.sourceImage, tile.x, tile.y, tile.width, tile.height, 0, 0, tileCanvas.width, tileCanvas.height);
+			this.tileCanvasContext.drawImage(rasterbation.sourceImage, tile.x, tile.y, tile.width, tile.height, 0, 0, this.tileCanvas.width, this.tileCanvas.height);
 
 			// extract canvas data and render to PDF
-			tileImageData = tileCanvas.toDataURL("image/jpeg", imageQuality);
-			doc.addImage(tileImageData, 'JPEG', tilesHorizontalMargin, tilesVerticalMargin, this.targetTileWidth, this.targetTileHeight);
-
-			//doc.text(1, 1, "Placehoder for tile " + tileIndex);
+			this.tileImageData = this.tileCanvas.toDataURL("image/jpeg", this.imageQuality);
+			this.doc.addImage(this.tileImageData, 'JPEG', this.tilesHorizontalMargin, this.tilesVerticalMargin, rasterbation.targetTileWidth, rasterbation.targetTileHeight);
 
 			// add a new page for the next tile
-			doc.addPage();
+			this.doc.addPage();
+
+			this.tileIndex++;
 		}
-
-		doc.setProperties({
-			title: 'Posterizer Rasterbated Image',
-			subject: 'This rasterbation has been created using http://posterizer.online',
-			author: 'Posterizer',
-			keywords: 'Posterizer, Rasterbation',
-			creator: 'Posterizer'
-		});
-
-		doc.save('rasterbation.pdf');
-	},
-
-	renderJPGs: function(link) {
-		console.log("Exporting tiles to JPG files");
-
-		// create ZIP file
-		var zip = new JSZip();
-		zip.file("info.txt", "Created by posterizer.online\n");
-		var tilesFolder = zip.folder("tiles");
-
-		// add raster
-		var previewCanvas = document.getElementById('setupCanvas');
-		zip.file("raster.jpg", getBase64FromCanvas(previewCanvas), {base64: true});
-
-		// add preview
-		var previewCanvas = document.getElementById('previewCanvas');
-		zip.file("preview.jpg", getBase64FromCanvas(previewCanvas), {base64: true});
-
-		// add tiles
-		var tileCanvas = document.createElement('canvas');
-		var tileCanvasContext = tileCanvas.getContext('2d');
-		tileCanvas.width  = this.targetTileWidthPX;
-		tileCanvas.height = this.targetTileHeightPX;
-
-		for (var tileIndex = 0; tileIndex < this.sourceImageRaster.length; tileIndex++) {
-			var tile = this.sourceImageRaster[tileIndex];
-			tile = this.scaleTile(tile, 1 / this.sourceImageScaleFactor);
-
-			// changing the canvas size resets its content
-			tileCanvas.width = tileCanvas.width;
-			tileCanvasContext.fillStyle = "#FFFFFF";
-			tileCanvasContext.fillRect(0, 0, tileCanvas.width, tileCanvas.height);
-
-			// project cropped source image to canvas
-			console.log("Projecting tile from: " + tile.x + "," + tile.y + "," + tile.width + "," + tile.height);
-			tileCanvasContext.drawImage(this.sourceImage, tile.x, tile.y, tile.width, tile.height, 0, 0, tileCanvas.width, tileCanvas.height);
-
-			var filename = "tile_row_" + (tile.verticalIndex + 1) + "_col_" + (tile.horizontalIndex + 1) + ".jpg";
-			
-			// add tile to ZIP
-			tilesFolder.file(filename, getBase64FromCanvas(tileCanvas), {base64: true});
-
-			/*
-			// save each tile as jpg
-			tileCanvas.toBlob(function(blob) {
-				saveAs(blob, filename);
-			}, "image/jpeg", 1);
-			*/
-		}
-
-		var zipFile = zip.generate({type:"blob"});
-		saveAs(zipFile, "rasterbation.zip");
 	},
 
 	renderJPGsAsync: function() {
@@ -674,20 +647,29 @@ var rasterbation = {
 
 		this.startRendering = function() {
 			this.tileIndex = 0;
-			this.renderInterval = setInterval(this.renderTile.bind(this), 0);
+			Materialize.toast("Starting export", 2000);
+			this.renderInterval = setInterval(this.renderTile.bind(this), 100);
+			rasterbation.disableRendering();
 		}
 
 		this.renderTile = function() {
 			if (this.tileIndex >= rasterbation.sourceImageRaster.length) {
 				console.log("All tiles rendered");
-
+				clearInterval(this.renderInterval);
+				
+				Materialize.toast("Export finished", 2000);
 				var zipFile = this.zip.generate({type:"blob"});
 				saveAs(zipFile, "rasterbation.zip");
 
-				clearInterval(this.renderInterval);
+				rasterbation.enableRendering();
+
 				return;
 			}
 
+			// report progress every 10 tiles
+			if ((this.tileIndex + 1) % 10 == 0) {
+				Materialize.toast("Rendering tile " + (this.tileIndex + 1), 500);
+			}
 
 			var tile = rasterbation.sourceImageRaster[this.tileIndex];
 			tile = rasterbation.scaleTile(tile, 1 / rasterbation.sourceImageScaleFactor);
@@ -708,8 +690,21 @@ var rasterbation = {
 
 			this.tileIndex++;
 		}
-	}
+	},
 
+	enableRendering: function() {
+		var downloadPDFButton = document.getElementById("downloadPDFButton");
+		var downloadJPGsButton = document.getElementById("downloadJPGsButton");
+		downloadPDFButton.classList.remove("disabled");
+		downloadJPGsButton.classList.remove("disabled");
+	},
+
+	disableRendering: function() {
+		var downloadPDFButton = document.getElementById("downloadPDFButton");
+		var downloadJPGsButton = document.getElementById("downloadJPGsButton");
+		downloadPDFButton.classList.add("disabled");
+		downloadJPGsButton.classList.add("disabled");
+	}
 };
 
 window.addEventListener('resize', function(event){
@@ -850,12 +845,11 @@ function initRasterbation() {
 	
 	var downloadPDFButton = document.getElementById("downloadPDFButton");
 	downloadPDFButton.addEventListener('click', function() {
-		rasterbation.renderPDF();
+		rasterbation.renderPDFAsync();
 	}, false);
 
 	var downloadJPGsButton = document.getElementById("downloadJPGsButton");
 	downloadJPGsButton.addEventListener('click', function() {
-		//rasterbation.renderJPGs();
 		rasterbation.renderJPGsAsync();
 	}, false);
 }
@@ -870,16 +864,15 @@ function initDropZone() {
 		acceptedFiles: "image/*",
 		init: function() {
 			this.on("addedfile", function(file) {
-				console.log("Dropzone added file");
+				//console.log("Dropzone added file");
 			});
 
 			this.on("complete", function(file) {
-				console.log("Dropzone complete");
+				//console.log("Dropzone complete");
 				//console.log(document.getElementById("imageDropzone").files.getAcceptedFiles());
 			});
 			this.on("thumbnail", function(file, dataUrl) {
-				console.log("Dropzone thumbnail");
-
+				//console.log("Dropzone thumbnail");
 				var targetThumbnailWidth = file.width;
 				var targetThumbnailHeight = file.height;
 				
@@ -887,23 +880,30 @@ function initDropZone() {
 					console.log("Setting dropzone thumbnail size to: " + targetThumbnailWidth + "x" + targetThumbnailHeight);
 					this.options.thumbnailWidth = file.width;
 					this.options.thumbnailHeight = file.height;
-					this.createThumbnail(file);
+
+					this.createThumbnail(file);					
 				} else {
-					var imageLoadedCallback = function() {
-						rasterbation.refreshRenderings();
-					}
-					rasterbation.setImage(dataUrl, imageLoadedCallback);
+					Materialize.toast("Creating rasterized preview", 2000);
+					window.setTimeout(function() {
+						return function() {
+							var _dataUrl = dataUrl;
+							var imageLoadedCallback = function() {
+								rasterbation.refreshRenderings();
+							}
+							rasterbation.setImage(_dataUrl, imageLoadedCallback);
+						}
+					}(), 500);
 				}
 			});
 			this.on("uploadprogress", function(file, progress, bytesSent) {
-				console.log("Dropzone uploadprogress: " + progress);
+				//console.log("Dropzone uploadprogress: " + progress);
 			});
 			this.on("success", function(file, response) {
-				console.log("Dropzone success: " + response);
+				//console.log("Dropzone success: " + response);
 			});
 
 			this.uploadFiles = function(files) {
-				console.log("Simulating file upload");
+				//console.log("Simulating file upload");
 				return this._finished(files, "success", null);
 			}
 		},
@@ -918,6 +918,7 @@ function initDropZone() {
 }
 
 function restoreConfig() {
+	var imageParam = getUrlParam("image");
 	var tileWidthParam = getUrlParam("width");
 	var tileHeightParam = getUrlParam("height");
 	var tileUnitParam = getUrlParam("tileUnit");
@@ -948,6 +949,10 @@ function restoreConfig() {
 	if (rowsParam != null) {
 		var verticalTilesCount = document.getElementById("verticalTilesCount");
 		verticalTilesCount.value = parseInt(rowsParam);
+	}
+
+	if (imageParam != null) {
+		rasterbation.sampleImageUrl = imageParam;
 	}
 }
 

@@ -14,25 +14,17 @@
   
   <script type="text/javascript">
     function loaded() {
-      // read URL parameters, cookies, etc
+      // read URL parameters & cookies
       restoreConfig();
 
-      // register listeners, create objects      
+      // register listeners & create objects      
       initRasterbation();
 
+      // load sample image
       var imageLoadedCallback = function() {
         rasterbation.refreshRenderings();
       }
-
-      // small image:  https://farm8.staticflickr.com/7650/16853455205_96ca2b6c69_b.jpg
-      // huge image: https://farm8.staticflickr.com/7650/16853455205_9c0ac08245_o.jpg
-
-      // small panorama image:  https://farm8.staticflickr.com/7766/17893366569_f45d89c581_b.jpg
-      // huge panorama image: https://farm8.staticflickr.com/7766/17893366569_6da705c7a3_o.jpg
-      
-      // random image: http://lorempixel.com/1920/1080/nature/
-
-      rasterbation.setImage("http://lorempixel.com/1920/1080/nature/", imageLoadedCallback);
+      rasterbation.setImage(rasterbation.sampleImageUrl, imageLoadedCallback);
     }
   </script>
 
