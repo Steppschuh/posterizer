@@ -901,15 +901,18 @@ function initDropZone() {
 			this.on("success", function(file, response) {
 				console.log("Dropzone success: " + response);
 			});
+
+			this.uploadFiles = function(files) {
+				console.log("Simulating file upload");
+				return this._finished(files, "success", null);
+			}
 		},
 		accept: function(file, done) {
-			if (file.name == "justinbieber.jpg") {
-				done("Naha, you don't.");
-			} else {
-				done();
-			}
+			done();
+			//done("Upload blocked");
 		}
 	};
+
 	//var imageDropzoneForm = document.getElementById("imageDropzone");
 	//var imageDropzone = Dropzone.getElement(imageDropzoneForm);
 }

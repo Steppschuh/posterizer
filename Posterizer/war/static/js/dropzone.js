@@ -138,7 +138,7 @@
       addRemoveLinks: false,
       previewsContainer: null,
       capture: null,
-      dictDefaultMessage: "Drop files here to upload",
+      dictDefaultMessage: "click or drop files here to upload",
       dictFallbackMessage: "Your browser does not support drag'n'drop file uploads.",
       dictFallbackText: "Please use the fallback form below to upload your files like in the olden days.",
       dictFileTooBig: "File is too big ({{filesize}}MiB). Max filesize: {{maxFilesize}}MiB.",
@@ -315,6 +315,11 @@
           }
           return setTimeout(((function(_this) {
             return function() {
+              file.previewElement.fileName = file.name;
+              file.previewElement.onclick = function() {
+                var dataUrl = file.previewElement.getElementsByTagName("img")[0].src;
+                Dropzone.instances[0].emit("thumbnail", file, dataUrl);
+              }
               return file.previewElement.classList.add("dz-image-preview");
             };
           })(this)), 1);

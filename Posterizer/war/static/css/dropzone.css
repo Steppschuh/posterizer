@@ -202,7 +202,8 @@
     .dropzone .dz-preview:hover {
       z-index: 1000; }
       .dropzone .dz-preview:hover .dz-details {
-        opacity: 1; }
+        opacity: 1;
+        cursor: pointer; }
     .dropzone .dz-preview.dz-file-preview .dz-image {
       border-radius: 20px;
       background: #999;
