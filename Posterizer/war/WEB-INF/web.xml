@@ -4,15 +4,63 @@ xmlns="http://java.sun.com/xml/ns/javaee"
 xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+	
+	<!-- Servlet for routing and filtering all requests -->
+	<filter>
+        <filter-name>requestFilter</filter-name>
+        <filter-class>com.steppschuh.posterizer.RequestFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>requestFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+	
+	<!-- Landing page servlet -->
 	<servlet>
-		<servlet-name>Posterizer</servlet-name>
+        <servlet-name>de/home</servlet-name>
+        <jsp-file>/website/en/home.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>de/home</servlet-name>
+        <url-pattern>/posterizer/de/homeservlet/*</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>en/home</servlet-name>
+        <jsp-file>/website/en/home.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>en/home</servlet-name>
+        <url-pattern>/posterizer/en/homeservlet/*</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Rasterbator page servlet -->
+	<servlet>
+        <servlet-name>de/rasterbator</servlet-name>
+        <jsp-file>/website/en/rasterbator.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>de/rasterbator</servlet-name>
+        <url-pattern>/posterizer/de/rasterbatorservlet/*</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>en/rasterbator</servlet-name>
+        <jsp-file>/website/en/rasterbator.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>en/rasterbator</servlet-name>
+        <url-pattern>/posterizer/en/rasterbatorservlet/*</url-pattern>
+    </servlet-mapping>
+    
+    
+    <!-- Root for the website, redirects to available JSPs -->
+    <servlet>
+		<servlet-name>posterizer</servlet-name>
 		<servlet-class>com.steppschuh.posterizer.PosterizerServlet</servlet-class>
-	</servlet>
+	</servlet>	
 	<servlet-mapping>
-		<servlet-name>Posterizer</servlet-name>
-		<url-pattern>/posterizer</url-pattern>
+		<servlet-name>posterizer</servlet-name>
+		<url-pattern>/posterizer/*</url-pattern>
 	</servlet-mapping>
-	<welcome-file-list>
-		<welcome-file>website/index.html</welcome-file>
-	</welcome-file-list>
+	
 </web-app>

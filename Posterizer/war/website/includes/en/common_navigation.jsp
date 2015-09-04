@@ -2,7 +2,7 @@
   	<header>
 		<nav class="primary-color" role="navigation">
 			<div class="nav-wrapper container">
-				<a id="logo-container" href="${rootUrl}" class="brand-logo">IntelliQ.me</a>
+				<a id="logo-container" href="${rootUrl}" class="brand-logo">Posterizer</a>
 				<ul class="right hide-on-med-and-down">
 
 				</ul>
@@ -16,3 +16,4 @@
 			</div>
 		</nav>
 	</header>
+

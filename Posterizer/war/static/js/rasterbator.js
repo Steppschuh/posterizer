@@ -589,8 +589,8 @@ var rasterbation = {
 				return;
 			}
 
-			// report progress every 10 tiles
-			if ((this.tileIndex + 1) % 10 == 0) {
+			// report progress every 5 tiles
+			if ((this.tileIndex + 1) % 5 == 0) {
 				Materialize.toast("Rendering tile " + (this.tileIndex + 1), 500);
 			}
 			
@@ -666,8 +666,8 @@ var rasterbation = {
 				return;
 			}
 
-			// report progress every 10 tiles
-			if ((this.tileIndex + 1) % 10 == 0) {
+			// report progress every 5 tiles
+			if ((this.tileIndex + 1) % 5 == 0) {
 				Materialize.toast("Rendering tile " + (this.tileIndex + 1), 500);
 			}
 

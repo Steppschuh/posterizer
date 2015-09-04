@@ -3,9 +3,8 @@
 			<div class="container">
 				<div class="row">
 					<div class="col l6 s12">
-						<h5 class="white-text">About IntelliQ.me</h5>
-						<p class="grey-text text-lighten-4">We think no one should waste lifetime while waiting. It doesn't matter where you are - you should be able to use the time until it's your turn effectively.
-						IntelliQ is a smart system to manage waiting queues and offers estimations about remaining waiting time.</p>
+						<h5 class="white-text">About Posterizer</h5>
+						<p class="grey-text text-lighten-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vulputate id massa ut euismod. Praesent pulvinar, metus at volutpat feugiat, mauris nunc mollis lectus, sed pulvinar urna neque vitae leo.</p>
 					</div>
 					<div class="col l3 s12">
 						<h5 class="white-text">Connect</h5>
@@ -29,10 +28,7 @@
 			</div>
 			<div class="footer-copyright">
 				<div class="container">
-					Developed with love by 
-					<a class="accent-color-text text-lighten-3" href="http://carl-ambroselli.de/">Carl</a>, 
-					<a class="accent-color-text text-lighten-3" href="http://markus-petrykowski.de/">Markus</a> and 
-					<a class="accent-color-text text-lighten-3" href="http://steppschuh.net/">Stephan</a>
+					Developed with love by <a class="accent-color-text text-lighten-3" href="http://steppschuh.net/">Stephan Schultz</a>
 				</div>
 			</div>
 		</footer>
@@ -44,17 +40,11 @@
 		
 		<!-- GA -->
 		<script>
-			(function(i, s, o, g, r, a, m) {
-				i['GoogleAnalyticsObject'] = r;
-				i[r] = i[r] || function() {
-					(i[r].q = i[r].q || []).push(arguments)
-				}, i[r].l = 1 * new Date();
-				a = s.createElement(o), m = s.getElementsByTagName(o)[0];
-				a.async = 1;
-				a.src = g;
-				m.parentNode.insertBefore(a, m)
-			})(window, document, 'script', '//www.google-analytics.com/analytics.js',
-					'ga');
-			ga('create', 'UA-15327134-25', 'auto');
-			ga('send', 'pageview');
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		  ga('create', 'UA-15327134-26', 'auto');
+		  ga('send', 'pageview');
 		</script>
